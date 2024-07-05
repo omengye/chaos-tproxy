@@ -18,6 +18,7 @@ pub struct Selector {
     pub code: Option<StatusCode>,
     pub request_headers: Option<HeaderMap>,
     pub response_headers: Option<HeaderMap>,
+    pub request_body_key: Option<String>,
 }
 
 /// select_role checks the given src_ip (or dst_ip) is contained in the give role.
@@ -98,6 +99,7 @@ mod tests {
             code: None,
             request_headers: None,
             response_headers: None,
+            request_body_key: None,
         };
         let req = Request::builder().body(Body::empty()).unwrap();
         assert_eq!(select_request(port, &req, &selector), true);
@@ -109,6 +111,7 @@ mod tests {
             code: None,
             request_headers: None,
             response_headers: None,
+            request_body_key: None,
         };
         let req = Request::builder()
             .uri("http://www.google.com/src/")

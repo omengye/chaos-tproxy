@@ -30,6 +30,8 @@ use crate::proxy::http::connector::HttpConnector;
 use crate::proxy::tcp::listener::TcpListener;
 use crate::proxy::tcp::transparent_socket::TransparentSocket;
 
+use hyper::body::HttpBody;
+
 /// HttpServer is the proxy service behind the iptables tproxy. It would accept the forwarded
 /// connection from the iptables tproxy, and then let [HttpService] to handle the connection.
 pub struct HttpServer {
@@ -244,6 +246,21 @@ impl HttpService {
         // inject chaos into request
         for rule in request_rules {
             debug!("{} : request matched, rule({:?})", log_key, rule);
+
+            if let Some(keyword) = &rule.selector.request_body_key {
+                let mut body_raw: Vec<u8> = Vec::new();
+                while let Some(Ok(ref chunk)) = request.body_mut().data().await {
+                    body_raw.extend(chunk);
+                }
+                if let Ok(str) = String::from_utf8(body_raw.to_vec()) {
+                    if !str.contains(keyword) {
+                        debug!("{} : request body not matched, rule({:?})", log_key, rule);
+                        continue;
+                    }
+                    debug!("{} : request body matched, rule({:?})", log_key, rule);
+                }
+            }
+            
             request = apply_request_action(request, &rule.actions).await?;
         }
 

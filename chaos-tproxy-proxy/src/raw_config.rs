@@ -86,6 +86,7 @@ pub struct RawSelector {
     pub code: Option<u16>,
     pub request_headers: Option<HashMap<String, String>>,
     pub response_headers: Option<HashMap<String, String>>,
+    pub response_body_key: Option<String>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
@@ -305,6 +306,7 @@ impl TryFrom<RawSelector> for Selector {
             request_headers: try_from_hash_map(raw.request_headers)?,
             code: raw.code.map(StatusCode::from_u16).transpose()?,
             response_headers: try_from_hash_map(raw.response_headers)?,
+            request_body_key: raw.response_body_key,
         })
     }
 }
